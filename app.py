@@ -194,7 +194,6 @@ if 'ia_classifier' not in st.session_state:
     st.session_state.ia_classifier = None
 
 # ========== CLASSE IA ==========
-# ========== CLASSE IA ==========
 class IAClassifier:
     def __init__(self):
         self.historico_predicoes = []
@@ -242,7 +241,6 @@ class IAClassifier:
             score += 20
             fatores.append("DDS baixo")
         
-        # CORRIGIDO: usa 'refeicoes_dia'
         if data['refeicoes_dia'] == "1":
             score += 15
             fatores.append("Apenas 1 refeição/dia")
@@ -293,7 +291,6 @@ class IAClassifier:
             score += 25
             fatores.append("DDS muito baixo")
         
-        # CORRIGIDO: usa 'refeicoes_dia'
         if data['refeicoes_dia'] == "1":
             score += 20
             fatores.append("Apenas 1 refeição/dia")
@@ -335,7 +332,6 @@ def calcular_idade(data_nascimento):
 def tela_login():
     st.markdown(f'<h1 class="main-title">{t("titulo")}</h1>', unsafe_allow_html=True)
     
-    # ===== TRADUTOR PT/EN =====
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.markdown('<div class="language-selector">', unsafe_allow_html=True)
@@ -396,7 +392,6 @@ admin / 123
 # FORMULÁRIO ENFERMEIRO COM SUPABASE
 # ============================================================
 def formulario_enfermeiro():
-    # ===== CARREGAR DADOS DO SUPABASE =====
     if SUPABASE_AVAILABLE:
         try:
             sucesso, dados = carregar_criancas_supabase()
@@ -416,11 +411,9 @@ def formulario_enfermeiro():
     st.title(f"{st.session_state.icone} {t('triagem')}")
     st.markdown("Avaliação de risco de anemia, fome oculta e insegurança alimentar em crianças menores de 5 anos")
     
-    # Inicializar IA
     if st.session_state.ia_classifier is None:
         st.session_state.ia_classifier = IAClassifier()
     
-    # Estado do formulário
     if 'dados_basicos_salvos' not in st.session_state:
         st.session_state.dados_basicos_salvos = False
     if 'nome_salvo' not in st.session_state:
@@ -432,7 +425,6 @@ def formulario_enfermeiro():
     
     with st.form("triagem_form", clear_on_submit=False):
         
-        # ===== DADOS DA CRIANÇA =====
         st.markdown('<div class="section-title">👶 DADOS DA CRIANÇA</div>', unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
@@ -479,7 +471,6 @@ def formulario_enfermeiro():
         st.info(f"👶 {nome_completo} - {idade_meses} meses")
         st.divider()
         
-        # ===== LOCALIZAÇÃO =====
         st.markdown("### 📍 Localização")
         
         col1, col2, col3, col4 = st.columns(4)
@@ -498,7 +489,6 @@ def formulario_enfermeiro():
         
         st.divider()
         
-        # ===== DADOS DA MÃE =====
         st.markdown('<div class="section-title">👩 DADOS DA MÃE</div>', unsafe_allow_html=True)
         
         col1, col2, col3, col4 = st.columns(4)
@@ -520,7 +510,6 @@ def formulario_enfermeiro():
         
         st.divider()
         
-        # ===== AVALIAÇÃO ANTROPOMÉTRICA =====
         st.markdown('<div class="section-title">📏 AVALIAÇÃO ANTROPOMÉTRICA</div>', unsafe_allow_html=True)
         
         col1, col2, col3, col4 = st.columns(4)
@@ -545,13 +534,11 @@ def formulario_enfermeiro():
         with col4:
             febre = st.selectbox("Febre", ["Não", "Sim"])
         
-        # ===== DIARREIA =====
         diarreia = st.selectbox(
             "💧 Diarreia (últimas 2 semanas)",
             ["Não", "Sim, 1-3 dias", "Sim, 4-7 dias", "Sim, mais de 7 dias"]
         )
         
-        # ===== DOENÇA CRÓNICA =====
         doenca_cronica = st.selectbox(
             "🏥 Doença Crónica",
             ["Nenhuma", "HIV/SIDA", "Tuberculose", "Doença Cardíaca", 
@@ -563,11 +550,9 @@ def formulario_enfermeiro():
         else:
             doenca_especificar = ""
         
-        st.divider()  # <--- CORRIGIDO! Sem espaços extras antes
+        st.divider()
         
-        # ===== CABELO E MUCOSAS =====
         st.markdown('<div class="section-title">💇 AVALIAÇÃO FÍSICA</div>', unsafe_allow_html=True)
-
 
         col1, col2 = st.columns(2)
         with col1:
@@ -583,7 +568,6 @@ def formulario_enfermeiro():
         
         st.divider()
         
-        # ===== SUPLEMENTAÇÃO =====
         st.markdown('<div class="section-title">💊 SUPLEMENTAÇÃO</div>', unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
@@ -596,7 +580,6 @@ def formulario_enfermeiro():
         
         st.divider()
         
-        # ===== HISTÓRICO ALIMENTAR =====
         st.markdown('<div class="section-title">🍽️ HISTÓRICO ALIMENTAR</div>', unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
@@ -618,7 +601,6 @@ def formulario_enfermeiro():
         
         st.divider()
         
-        # ===== ALIMENTOS CONSUMIDOS =====
         st.markdown('<div class="section-title">🥗 ALIMENTOS CONSUMIDOS</div>', unsafe_allow_html=True)
         
         alimentos = {
@@ -643,7 +625,6 @@ def formulario_enfermeiro():
                         selecionados.append(item)
                 st.markdown("---")
         
-        # ===== CALCULAR DDS =====
         grupos = 0
         for categoria, items in alimentos.items():
             for item in items:
@@ -652,9 +633,6 @@ def formulario_enfermeiro():
                     break
         dds_calculado = min(9, grupos)
         
-        # ============================================================
-        # ===== PRODUÇÃO AGRÍCOLA =====
-        # ============================================================
         st.markdown('<div class="section-title">🌾 PRODUÇÃO AGRÍCOLA</div>', unsafe_allow_html=True)
 
         col1, col2 = st.columns(2)
@@ -701,10 +679,8 @@ def formulario_enfermeiro():
 
         st.divider()
         
-        # ===== BOTÃO CALCULAR =====
         submitted = st.form_submit_button("🧮 Calcular Risco", use_container_width=True)
     
-    # ===== PROCESSAR (FORA DO FORM) =====
     if submitted:
         if idade_meses >= 60:
             st.error("❌ Criança com 5 anos ou mais!")
@@ -768,7 +744,6 @@ def formulario_enfermeiro():
                 'risco_inseguranca_score': score_inseg,
             })
             
-            # ===== SALVAR NO SUPABASE =====
             if SUPABASE_AVAILABLE:
                 try:
                     sucesso, resultado = salvar_crianca_supabase(data)
@@ -786,7 +761,6 @@ def formulario_enfermeiro():
                 st.session_state.criancas.append(data)
                 st.success(f"✅ {nome_completo} registado localmente!")
             
-            # ===== RESULTADOS =====
             st.markdown(f"<h2 style='text-align:center;color:#1B5E20;'>👶 {nome_completo}</h2>", unsafe_allow_html=True)
             
             col1, col2, col3 = st.columns(3)
@@ -839,7 +813,6 @@ def formulario_enfermeiro():
                 </div>
                 """, unsafe_allow_html=True)
             
-            # ===== FATORES DE RISCO =====
             st.markdown(f"### 📋 {t('fatores_risco')}")
             
             for f in fatores_anemia:
@@ -851,7 +824,6 @@ def formulario_enfermeiro():
                 if f not in fatores_anemia and f not in fatores_fome:
                     st.markdown(f"🔴 {f}")
             
-            # ===== RECOMENDAÇÕES =====
             st.markdown(f"### 💡 {t('recomendacoes')}")
             
             if risco_anemia == "ALTO":
@@ -879,7 +851,6 @@ def main():
     if not st.session_state.logado:
         tela_login()
     else:
-        # ===== MOSTRAR PERFIL LOGADO =====
         col1, col2, col3 = st.columns([1, 6, 1])
         with col1:
             st.markdown(f"### {st.session_state.icone}")
@@ -895,24 +866,21 @@ def main():
         
         st.markdown("---")
         
-        # ===== REDIRECIONAR POR PERFIL =====
         perfil = st.session_state.perfil
         
         if perfil == "enfermeiro":
             formulario_enfermeiro()
         elif perfil == "medico":
-            # Aqui chama o formulário do médico
-            try:
-                from pages import medico
-                medico.render_medico()
-            except ImportError:
-                st.info("👨‍⚕️ Módulo Médico - Em desenvolvimento")
+            from pages import medico
+            medico.render_medico()
         elif perfil == "nutricionista":
-            st.info("🍎 Módulo Nutricionista - Em desenvolvimento")
+            from pages import nutricionista
+            nutricionista.render_nutricionista()
         elif perfil == "agronomo":
-            st.info("🌾 Módulo Agrônomo - Em desenvolvimento")
+            from pages import agronomo
+            agronomo.render_agronomo()
         elif perfil == "admin":
-            st.info("👨💼 Painel Administrativo - Em desenvolvimento")
+            st.info("👨💼 Painel Administrativo")
         else:
             st.info("📋 Selecione uma opção no menu lateral")
 
