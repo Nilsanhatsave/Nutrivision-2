@@ -847,21 +847,227 @@ def render_medico():
                 
                 st.divider()
                 
-                # ===== CONTINUAÇÃO DO CÓDIGO =====
-                # (O restante do código continua aqui - as abas Dashboard, Histórico e Encaminhamentos)
-                st.info("📋 Área em desenvolvimento - Complete com o restante do código")
-    
+                  # ============================================================
+    # ===== TAB 2: DASHBOARD =====
+    # ============================================================
     with tab2:
         st.subheader("📊 Dashboard de Acompanhamento")
-        st.info("📊 Dashboard em desenvolvimento")
-    
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            total = len(patients)
+            st.metric("👶 Total Pacientes", total)
+        
+        with col2:
+            hb_baixa = sum(1 for p in patients if p.get('hemoglobina') is not None and p.get('hemoglobina', 12) < 11)
+            st.metric("🩸 Hb < 11 g/dL", hb_baixa)
+        
+        with col3:
+            alto_risco = sum(1 for p in patients if p.get('anemia_risco') == 'ALTO')
+            st.metric("🔴 Alto Risco", alto_risco)
+        
+        with col4:
+            seguidos = len(st.session_state.medical_records)
+            st.metric("📋 Decisões Registadas", seguidos)
+        
+        st.divider()
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if patients and 'anemia_risco' in patients[0]:
+                df = pd.DataFrame(patients)
+                fig = px.pie(df, names='anemia_risco', 
+                            title='Distribuição de Risco de Anemia',
+                            color='anemia_risco',
+                            color_discrete_map={'ALTO': '#c62828', 'MÉDIO': '#ef6c00', 'BAIXO': '#2e7d32'})
+                fig.update_traces(textposition='inside', textinfo='percent+label')
+                st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            if patients and 'tipo_anemia' in patients[0]:
+                df = pd.DataFrame(patients)
+                df_valid = df[df['tipo_anemia'].notna() & (df['tipo_anemia'] != "Selecionar...")]
+                if not df_valid.empty:
+                    fig = px.pie(df_valid, names='tipo_anemia', 
+                                title='Distribuição - Tipo de Anemia')
+                    fig.update_traces(textposition='inside', textinfo='percent+label')
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    st.info("📋 Nenhum tipo de anemia registado")
+        
+        st.subheader("📋 Lista de Pacientes")
+        df_patients = pd.DataFrame(patients)
+        colunas_mostrar = ['nome', 'idade_meses', 'hemoglobina', 'tipo_anemia', 
+                          'diarreia', 'doenca_cronica', 'anemia_risco']
+        colunas_existentes = [c for c in colunas_mostrar if c in df_patients.columns]
+        st.dataframe(df_patients[colunas_existentes], use_container_width=True)
+
+    # ============================================================
+    # ===== TAB 3: HISTÓRICO =====
+    # ============================================================
     with tab3:
         st.subheader("📜 Histórico de Decisões Clínicas")
-        st.info("📜 Histórico em desenvolvimento")
-    
+        
+        if st.session_state.medical_records:
+            df_records = pd.DataFrame(st.session_state.medical_records)
+            st.dataframe(df_records[['paciente', 'data', 'diagnostico', 'prescricao', 'seguimento']], 
+                        use_container_width=True)
+            
+            st.subheader("🔍 Detalhes por Paciente")
+            selected_hist = st.selectbox(
+                "Selecione um paciente para ver histórico:",
+                df_records['paciente'].unique().tolist()
+            )
+            
+            if selected_hist:
+                df_paciente = df_records[df_records['paciente'] == selected_hist]
+                for _, row in df_paciente.iterrows():
+                    with st.expander(f"📋 {row['data']}"):
+                        st.markdown(f"**Diagnóstico:** {row['diagnostico']}")
+                        st.markdown(f"**Prescrição:** {row['prescricao']}")
+                        st.markdown(f"**Seguimento:** {row['seguimento']}")
+                        st.markdown(f"**Observações:** {row.get('observacoes', 'N/A')}")
+                        st.markdown(f"**Hemoglobina:** {row.get('hemoglobina', 'N/A')} g/dL")
+                        st.markdown(f"**Tipo Anemia:** {row.get('tipo_anemia', 'N/A')}")
+        else:
+            st.info("📋 Nenhum registo clínico disponível ainda.")
+
+    # ============================================================
+    # ===== TAB 4: ENCAMINHAMENTOS =====
+    # ============================================================
     with tab4:
         st.subheader("📨 Gestão de Encaminhamentos")
-        st.info("📨 Encaminhamentos em desenvolvimento")
+        
+        if 'encaminhamentos' in st.session_state and st.session_state.encaminhamentos:
+            df_enc = pd.DataFrame(st.session_state.encaminhamentos)
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("📋 Total", len(df_enc))
+            with col2:
+                pendentes = len(df_enc[df_enc['status'] == 'Pendente'])
+                st.metric("⏳ Pendentes", pendentes)
+            with col3:
+                if 'especialidade' in df_enc.columns:
+                    nutri = len(df_enc[df_enc['especialidade'] == 'Nutricionista'])
+                    st.metric("🍎 Nutricionista", nutri)
+                else:
+                    st.metric("🍎 Nutricionista", 0)
+            with col4:
+                if 'especialidade' in df_enc.columns:
+                    agro = len(df_enc[df_enc['especialidade'] == 'Agrônomo'])
+                    st.metric("🌾 Agrônomo", agro)
+                else:
+                    st.metric("🌾 Agrônomo", 0)
+            
+            st.divider()
+            
+            st.subheader("🔍 Filtrar Encaminhamentos")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                especialidade_filtro = st.selectbox(
+                    "Especialidade:",
+                    ["Todas", "Nutricionista", "Agrônomo"],
+                    key="filtro_especialidade"
+                )
+            with col2:
+                status_filtro = st.selectbox(
+                    "Status:",
+                    ["Todos", "Pendente", "Em andamento", "Concluído"],
+                    key="filtro_status"
+                )
+            with col3:
+                data_inicio = st.date_input(
+                    "Data de Início:",
+                    value=datetime.now() - timedelta(days=30),
+                    key="filtro_data_inicio"
+                )
+                data_fim = st.date_input(
+                    "Data de Fim:",
+                    value=datetime.now(),
+                    key="filtro_data_fim"
+                )
+            
+            df_filtrado = df_enc.copy()
+            
+            if especialidade_filtro != "Todas":
+                df_filtrado = df_filtrado[df_filtrado['especialidade'] == especialidade_filtro]
+            
+            if status_filtro != "Todos":
+                df_filtrado = df_filtrado[df_filtrado['status'] == status_filtro]
+            
+            if 'data' in df_filtrado.columns:
+                df_filtrado['data_filtro'] = pd.to_datetime(df_filtrado['data']).dt.date
+                df_filtrado = df_filtrado[
+                    (df_filtrado['data_filtro'] >= data_inicio) & 
+                    (df_filtrado['data_filtro'] <= data_fim)
+                ]
+            
+            st.info(f"📋 Mostrando {len(df_filtrado)} encaminhamentos")
+            
+            colunas_tabela = ['paciente', 'especialidade', 'urgencia', 'data', 'status']
+            colunas_existentes = [c for c in colunas_tabela if c in df_filtrado.columns]
+            st.dataframe(df_filtrado[colunas_existentes], use_container_width=True)
+            
+            st.subheader("🔍 Detalhes do Encaminhamento")
+            
+            if not df_filtrado.empty:
+                selected_enc = st.selectbox(
+                    "Selecione um encaminhamento para ver detalhes:",
+                    df_filtrado['paciente'].unique().tolist(),
+                    key="select_enc_detalhes"
+                )
+                
+                if selected_enc:
+                    df_selected = df_filtrado[df_filtrado['paciente'] == selected_enc]
+                    for idx, row in df_selected.iterrows():
+                        titulo = f"📋 {row.get('especialidade', 'N/A')} - {row['data']}"
+                        with st.expander(titulo, expanded=True):
+                            col1, col2 = st.columns(2)
+                            
+                            with col1:
+                                st.markdown(f"**Paciente:** {row['paciente']}")
+                                st.markdown(f"**Especialidade:** {row.get('especialidade', 'N/A')}")
+                                st.markdown(f"**Urgência:** {row.get('urgencia', 'Normal')}")
+                                st.markdown(f"**Status:** {row.get('status', 'Pendente')}")
+                                st.markdown(f"**Data:** {row['data']}")
+                                st.markdown(f"**Médico:** {row.get('medico_responsavel', 'N/A')}")
+                            
+                            with col2:
+                                st.markdown("**Motivo:**")
+                                st.markdown(f"{row.get('motivo', 'Não especificado')}")
+                            
+                            st.markdown("**📊 Dados Clínicos Enviados:**")
+                            dados_clinicos = obter_dados_clinicos(row)
+                            if dados_clinicos:
+                                col1, col2 = st.columns(2)
+                                with col1:
+                                    st.markdown(f"- Hemoglobina: {dados_clinicos.get('hemoglobina', 'N/A')} g/dL")
+                                    st.markdown(f"- Tipo de Anemia: {dados_clinicos.get('tipo_anemia', 'N/A')}")
+                                    st.markdown(f"- Densidade Parasitária: {dados_clinicos.get('densidade_parasitaria', 'N/A')}")
+                                with col2:
+                                    st.markdown(f"- DDS: {dados_clinicos.get('dds', 0)}/9")
+                                    st.markdown(f"- MUAC: {dados_clinicos.get('muac', 0)} mm")
+                                    st.markdown(f"- Risco de Anemia: {dados_clinicos.get('anemia_risco', 'N/A')}")
+                            else:
+                                st.info("📋 Dados clínicos não disponíveis")
+                            
+                            if row.get('status') == 'Pendente':
+                                if st.button(
+                                    f"✅ Marcar como Concluído - {row['paciente']}", 
+                                    key=f"btn_concluir_{idx}_{row['paciente']}_{row['data']}"
+                                ):
+                                    for enc in st.session_state.encaminhamentos:
+                                        if enc['paciente'] == selected_enc and enc['data'] == row['data']:
+                                            enc['status'] = 'Concluído'
+                                            st.rerun()
+            else:
+                st.info("📋 Nenhum encaminhamento com os filtros selecionados.")
+        else:
+            st.info("📋 Nenhum encaminhamento registado ainda.")
 
 if __name__ == "__main__":
     render_medico()
