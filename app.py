@@ -4,29 +4,43 @@ import random
 
 # ===== CONFIGURAÇÃO =====
 st.set_page_config(
-    page_title="NutriVision - One Health",
+    page_title="NutriVision - Plataforma Integrada - One Health",
     page_icon="🌿",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 # ===== CSS PERSONALIZADO =====
 st.markdown("""
 <style>
-.main-title {
-    text-align: center;
-    font-size: 4rem;
-    color: #1B5E20;
-    margin-bottom: 0;
+/* TÍTULO PRINCIPAL */
+.main-title { 
+        font-size: 7.5rem !important;
+        font-weight: 900 !important;
+        background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #43A047 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        padding: 1.5rem 0;
+        letter-spacing: -2px;
+        text-shadow: 0 4px 20px rgba(46, 125, 50, 0.15);
+        line-height: 1.2;
 }
 .sub-title {
-    text-align: center;
-    font-size: 1.2rem;
-    color: #2E7D32;
-    margin-top: 0;
-    line-height: 1.8;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
+     font-size: 1.5rem !important;  
+    font-weight: 700 !important;
+    color: #2E7D32 !important;
+    text-align: center !important;
+    margin: 0 auto 1.5rem auto !important;
+    padding: 1.5rem 3.0rem !important;
+    line-height: 1.6 !important;
+    background: rgba(255,255,255,0.7) !important;
+    border-radius: 14px !important;
+    border: 1px solid rgba(46, 125, 50, 0.1) !important;
+    width: 90% !important;
+    max-width: 900% !important;
+    box-sizing: border-box !important;
+        
 }
 .login-box {
     background-color: #f8f9fa;
@@ -34,6 +48,9 @@ st.markdown("""
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
+            
+.main-subheader strong { color: #1B5E20; font-weight: 600; }
+            
 .language-selector {
     text-align: center;
     margin-top: 10px;
@@ -109,7 +126,8 @@ st.markdown("""
 TRADUCOES = {
     'pt': {
         'titulo': '🌿 NutriVision',
-        'subtitulo': 'Plataforma de Deteção Precoce da Anemia, Fome Oculta e Insegurança Alimentar para a Prevenção através de Intervenções Integradas nos Sistemas de Saúde e Agroalimentares',
+        'subtitulo': '🌿 NutriVision',
+        'subtitulo': 'Plataforma One Health de Deteção Precoce da Anemia, Fome Oculta, Insegurança Alimentar<br>e Prevenção através de Intervenções Integradas nos Sistemas de Saúde e Agroalimentares',
         'login': 'Login',
         'usuario': 'Usuário',
         'senha': 'Senha',
@@ -128,7 +146,7 @@ TRADUCOES = {
     },
     'en': {
         'titulo': '🌿 NutriVision',
-        'subtitulo': 'Platform for Early Detection of Anemia, Hidden Hunger and Food Insecurity for Prevention through Integrated Interventions in Health and Agri-Food Systems',
+        'subtitulo': 'One Health Platform for Early Detection of Anemia, Hidden Hunger, Food Insecurity<br>and Prevention through Integrated Interventions in Health and Agri-Food Systems',
         'login': 'Login',
         'usuario': 'Username',
         'senha': 'Password',
@@ -356,7 +374,7 @@ def tela_login():
     
     with col2:
         with st.container():
-            st.markdown('<div class="login-box">', unsafe_allow_html=True)
+            st.markdown('<div class="language-selector">', unsafe_allow_html=True)
             
             st.markdown(f"### 🔐 {t('login')}")
             
