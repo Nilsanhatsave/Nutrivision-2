@@ -27,7 +27,7 @@ st.markdown("""
         line-height: 1.2;
 }
 .sub-title {
-     font-size: 1.0rem !important;  
+     font-size: 1.30rem !important;  
     font-weight: 700 !important;
     color: #2E7D32 !important;
     text-align: center !important;
