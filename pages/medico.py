@@ -1768,3 +1768,4 @@ def render_medico():
 # ========== MAIN ==========
 if __name__ == "__main__":
     render_medico()
+    
