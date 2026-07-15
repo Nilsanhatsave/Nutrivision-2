@@ -15,7 +15,7 @@ st.markdown("""
 <style>
 /* TÍTULO PRINCIPAL */
 .main-title { 
-        font-size: 7.5rem !important;
+        font-size: 5.5rem !important;
         font-weight: 900 !important;
         background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #43A047 100%);
         -webkit-background-clip: text;
@@ -27,7 +27,7 @@ st.markdown("""
         line-height: 1.2;
 }
 .sub-title {
-     font-size: 1.30rem !important;  
+     font-size: 1.10rem !important;  
     font-weight: 700 !important;
     color: #2E7D32 !important;
     text-align: center !important;
