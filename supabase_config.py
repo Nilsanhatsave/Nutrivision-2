@@ -4,6 +4,7 @@
 from supabase import create_client
 import streamlit as st
 from datetime import datetime
+import json
 
 # ===== CHAVES DIRETAS =====
 SUPABASE_URL = "https://llfcnigfidoiyhaitala.supabase.co"
@@ -26,6 +27,7 @@ def verificar_conexao():
         return True, "Conexão ativa"
     return False, "Sem conexão"
 
+# ===== FUNÇÕES PARA CRIANÇAS =====
 def salvar_crianca_supabase(dados):
     if not SUPABASE_AVAILABLE:
         return False, "Supabase nao disponivel"
@@ -54,7 +56,6 @@ def atualizar_crianca_supabase(id, dados):
         return False, str(e)
 
 # ===== FUNÇÕES PARA DECISÕES CLÍNICAS =====
-
 def criar_tabela_decisoes_clinicas():
     """Cria a tabela de decisões clínicas no Supabase se não existir"""
     try:
@@ -135,5 +136,86 @@ def carregar_decisoes_clinicas_supabase():
             if "relation" in str(e) and "does not exist" in str(e):
                 return False, "Tabela ainda não foi criada"
             return False, str(e)
+    except Exception as e:
+        return False, str(e)
+
+# ============================================================
+# ===== FUNÇÕES PARA ENCAMINHAMENTOS =====
+# ============================================================
+def salvar_encaminhamento_supabase(encaminhamento):
+    """Salva um encaminhamento no Supabase"""
+    if not SUPABASE_AVAILABLE:
+        return False, "Supabase não disponível"
+    try:
+        dados = {
+            'paciente': encaminhamento.get('paciente', ''),
+            'especialidade': encaminhamento.get('especialidade', ''),
+            'urgencia': encaminhamento.get('urgencia', 'Normal'),
+            'motivo': encaminhamento.get('motivo', ''),
+            'data': encaminhamento.get('data', datetime.now().strftime('%Y-%m-%d %H:%M')),
+            'status': encaminhamento.get('status', 'Pendente'),
+            'medico_responsavel': encaminhamento.get('medico_responsavel', ''),
+            'dados_clinicos': json.dumps(encaminhamento.get('dados_clinicos', {}))
+        }
+        resultado = supabase.table('encaminhamentos').insert(dados).execute()
+        return True, resultado.data
+    except Exception as e:
+        return False, str(e)
+
+def carregar_encaminhamentos_supabase(especialidade=None):
+    """Carrega encaminhamentos do Supabase"""
+    if not SUPABASE_AVAILABLE:
+        return False, []
+    try:
+        query = supabase.table('encaminhamentos').select('*').order('created_at', desc=True)
+        if especialidade:
+            query = query.eq('especialidade', especialidade)
+        resultado = query.execute()
+        return True, resultado.data
+    except Exception as e:
+        return False, str(e)
+
+# ============================================================
+# ===== FUNÇÕES PARA ATUALIZAR ENCAMINHAMENTOS =====
+# ============================================================
+def atualizar_status_encaminhamento_supabase(paciente, data, novo_status):
+    """Atualiza o status de um encaminhamento no Supabase"""
+    if not SUPABASE_AVAILABLE:
+        return False, "Supabase nao disponivel"
+    try:
+        resultado = supabase.table('encaminhamentos')\
+            .update({'status': novo_status})\
+            .eq('paciente', paciente)\
+            .eq('data', data)\
+            .execute()
+        return True, resultado.data
+    except Exception as e:
+        return False, str(e)
+
+
+def atualizar_encaminhamento_supabase(id, dados):
+    """Atualiza um encaminhamento específico no Supabase"""
+    if not SUPABASE_AVAILABLE:
+        return False, "Supabase nao disponivel"
+    try:
+        resultado = supabase.table('encaminhamentos')\
+            .update(dados)\
+            .eq('id', id)\
+            .execute()
+        return True, resultado.data
+    except Exception as e:
+        return False, str(e)
+
+
+def deletar_encaminhamento_supabase(id):
+    """Deleta um encaminhamento do Supabase"""
+    if not SUPABASE_AVAILABLE:
+        return False, "Supabase nao disponivel"
+    try:
+        resultado = supabase.table('encaminhamentos')\
+            .delete()\
+            .eq('id', id)\
+            .execute()
+        return True, resultado.data
     except Exception as e:
         return False, str(e)
